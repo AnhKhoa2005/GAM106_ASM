@@ -155,11 +155,11 @@ namespace GAM106_ASM
             // Thêm CSP headers để cho phép inline scripts và eval (cần cho Razor Pages)
             app.Use(async (context, next) =>
             {
-                context.Response.Headers.Append("Content-Security-Policy", 
+                context.Response.Headers.Append("Content-Security-Policy",
                     "default-src 'self'; " +
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com; " +
-                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
-                    "font-src 'self' https://cdnjs.cloudflare.com; " +
+                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
+                    "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; " +
                     "img-src 'self' data: https:; " +
                     "connect-src 'self';");
                 await next();

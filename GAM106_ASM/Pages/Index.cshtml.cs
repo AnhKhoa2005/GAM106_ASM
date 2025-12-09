@@ -60,7 +60,11 @@ namespace GAM106_ASM.Pages
                 client.Timeout = TimeSpan.FromSeconds(30); // Tăng timeout lên 30 giây cho lần đầu
 
                 var loginContent = new StringContent(JsonSerializer.Serialize(Input), Encoding.UTF8, "application/json");
+                Console.WriteLine($"[LOGIN] Calling API: {baseApiUrl}/api/Auth/Login");
+                Console.WriteLine($"[LOGIN] Request body: {JsonSerializer.Serialize(Input)}");
+                
                 var response = await client.PostAsync($"{baseApiUrl}/api/Auth/Login", loginContent);
+                Console.WriteLine($"[LOGIN] Response status: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -112,25 +116,30 @@ namespace GAM106_ASM.Pages
                 }
                 else
                 {
-                    ErrorMessage = "Lỗi hệ thống khi đăng nhập.";
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"[LOGIN ERROR] Status: {response.StatusCode}, Body: {errorContent}");
+                    ErrorMessage = $"Lỗi hệ thống khi đăng nhập. ({response.StatusCode})";
                     return Page();
                 }
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException ex)
             {
+                Console.WriteLine($"[LOGIN TIMEOUT] {ex.Message}");
                 ErrorMessage = "Yêu cầu đăng nhập hết thời gian chờ. Vui lòng thử lại.";
                 return Page();
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine($"[LOGIN HTTP ERROR] {ex.Message}");
+                Console.WriteLine($"[LOGIN HTTP ERROR] InnerException: {ex.InnerException?.Message}");
                 ErrorMessage = "Không thể kết nối đến server. Vui lòng thử lại.";
-                Console.WriteLine($"HTTP Error: {ex.Message}");
                 return Page();
             }
             catch (Exception ex)
             {
-                ErrorMessage = "Có lỗi xảy ra. Vui lòng thử lại.";
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"[LOGIN EXCEPTION] {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine($"[LOGIN EXCEPTION] StackTrace: {ex.StackTrace}");
+                ErrorMessage = $"Có lỗi xảy ra: {ex.Message}";
                 return Page();
             }
         }
