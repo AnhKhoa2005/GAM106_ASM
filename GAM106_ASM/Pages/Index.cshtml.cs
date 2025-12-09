@@ -56,13 +56,20 @@ namespace GAM106_ASM.Pages
             try
             {
                 string baseApiUrl = _configuration.GetValue<string>("BaseApiUrl") ?? Request.Scheme + "://" + Request.Host.Value;
+                
+                // Force HTTPS trong production
+                if (Request.Host.Value.Contains("fly.dev"))
+                {
+                    baseApiUrl = "https://" + Request.Host.Value;
+                }
+                
                 var client = _clientFactory.CreateClient();
-                client.Timeout = TimeSpan.FromSeconds(30); // Tăng timeout lên 30 giây cho lần đầu
+                client.Timeout = TimeSpan.FromSeconds(30);
 
                 var loginContent = new StringContent(JsonSerializer.Serialize(Input), Encoding.UTF8, "application/json");
                 Console.WriteLine($"[LOGIN] Calling API: {baseApiUrl}/api/Auth/Login");
                 Console.WriteLine($"[LOGIN] Request body: {JsonSerializer.Serialize(Input)}");
-                
+
                 var response = await client.PostAsync($"{baseApiUrl}/api/Auth/Login", loginContent);
                 Console.WriteLine($"[LOGIN] Response status: {response.StatusCode}");
 

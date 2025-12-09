@@ -152,18 +152,17 @@ namespace GAM106_ASM
                 app.UseHsts();
             }
 
-            // Thêm CSP headers để cho phép inline scripts và eval (cần cho Razor Pages)
-            app.Use(async (context, next) =>
+            // Disable CSP trong production để tránh conflict với Fly.io
+            // (Local dev không cần CSP vì chạy trusted environment)
+            if (!app.Environment.IsDevelopment())
             {
-                context.Response.Headers.Append("Content-Security-Policy",
-                    "default-src 'self'; " +
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com; " +
-                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
-                    "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; " +
-                    "img-src 'self' data: https:; " +
-                    "connect-src 'self';");
-                await next();
-            });
+                app.Use(async (context, next) =>
+                {
+                    // Tắt CSP hoàn toàn bằng cách set unsafe-inline và unsafe-eval cho tất cả
+                    context.Response.Headers.Remove("Content-Security-Policy");
+                    await next();
+                });
+            }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
