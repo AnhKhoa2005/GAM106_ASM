@@ -16,8 +16,11 @@ namespace GAM106_ASM
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Cấu hình port cho Fly.io
-            builder.WebHost.UseUrls("http://0.0.0.0:8080");
+            // Cấu hình port cho Fly.io (chỉ khi deploy production)
+            if (Environment.GetEnvironmentVariable("FLY_APP_NAME") != null)
+            {
+                builder.WebHost.UseUrls("http://0.0.0.0:8080");
+            }
 
             // Tăng giới hạn Header size để tránh lỗi 400 khi Cookie quá lớn (chứa JWT)
             builder.WebHost.ConfigureKestrel(options =>
@@ -148,6 +151,19 @@ namespace GAM106_ASM
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
+
+            // Thêm CSP headers để cho phép inline scripts và eval (cần cho Razor Pages)
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("Content-Security-Policy", 
+                    "default-src 'self'; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com; " +
+                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                    "font-src 'self' https://cdnjs.cloudflare.com; " +
+                    "img-src 'self' data: https:; " +
+                    "connect-src 'self';");
+                await next();
+            });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
