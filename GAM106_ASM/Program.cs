@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies; // Thêm Cookie Auth
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace GAM106_ASM
 {
@@ -102,6 +103,14 @@ namespace GAM106_ASM
                     options.SuppressModelStateInvalidFilter = true;
                 });
 
+            // Tôn trọng các header X-Forwarded-* từ Fly.io để biết request gốc là https
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             // THÊM CORS POLICY
             builder.Services.AddCors(options =>
             {
@@ -149,22 +158,27 @@ namespace GAM106_ASM
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                app.UseHsts();
+                // Không dùng HSTS/HttpsRedirect trên Fly (TLS terminate ở edge)
             }
 
+            // Tôn trọng X-Forwarded-* trước mọi middleware khác
+            app.UseForwardedHeaders();
+
             // Disable CSP trong production để tránh conflict với Fly.io
-            // (Local dev không cần CSP vì chạy trusted environment)
             if (!app.Environment.IsDevelopment())
             {
                 app.Use(async (context, next) =>
                 {
-                    // Tắt CSP hoàn toàn bằng cách set unsafe-inline và unsafe-eval cho tất cả
                     context.Response.Headers.Remove("Content-Security-Policy");
                     await next();
                 });
             }
 
-            app.UseHttpsRedirection();
+            // Chỉ redirect HTTPS khi local dev (có cert localhost)
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
             app.UseStaticFiles();
             app.UseRouting();
 
