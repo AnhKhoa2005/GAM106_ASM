@@ -11,6 +11,7 @@ using GAM106_ASM.DTOs; // Đảm bảo DTOs/LoginRequest.cs tồn tại
 namespace GAM106_ASM.Pages
 {
     [AllowAnonymous] // Trang này là trang công cộng (Login)
+    [IgnoreAntiforgeryToken] // Tránh lỗi 400 do antiforgery khi deploy qua proxy
     public class IndexModel : PageModel // Tên lớp vẫn là IndexModel
     {
         private readonly IHttpClientFactory _clientFactory;
@@ -56,13 +57,13 @@ namespace GAM106_ASM.Pages
             try
             {
                 string baseApiUrl = _configuration.GetValue<string>("BaseApiUrl") ?? Request.Scheme + "://" + Request.Host.Value;
-                
+
                 // Force HTTPS trong production
                 if (Request.Host.Value.Contains("fly.dev"))
                 {
                     baseApiUrl = "https://" + Request.Host.Value;
                 }
-                
+
                 var client = _clientFactory.CreateClient();
                 client.Timeout = TimeSpan.FromSeconds(30);
 
