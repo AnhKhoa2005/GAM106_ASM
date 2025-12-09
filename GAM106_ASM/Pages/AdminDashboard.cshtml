@@ -1,0 +1,143 @@
+﻿@page
+@model GAM106_ASM.Pages.AdminDashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h1>Chào mừng trở lại! 👋</h1>
+            <p>Xin chào <strong>@Model.AdminEmail</strong>, đây là trung tâm quản lý của bạn</p>
+        </div>
+        <div class="welcome-illustration">
+            <i class="fas fa-chart-line"></i>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card card-purple">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-details">
+                <h3>@Model.TotalPlayers</h3>
+                <p>Tổng người chơi</p>
+                <span class="stat-change positive">
+                    <i class="fas fa-check-circle"></i> Đang hoạt động
+                </span>
+            </div>
+        </div>
+
+        <div class="stat-card card-blue">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div class="stat-details">
+                <h3>@Model.TotalItems</h3>
+                <p>Vật phẩm</p>
+                <span class="stat-change positive">
+                    <i class="fas fa-box-open"></i> Trong kho
+                </span>
+            </div>
+        </div>
+
+        <div class="stat-card card-green">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-details">
+                <h3>@Model.TotalRevenue.ToString("N0")</h3>
+                <p>Doanh thu</p>
+                <span class="stat-change positive">
+                    <i class="fas fa-coins"></i> Tổng tích lũy
+                </span>
+            </div>
+        </div>
+
+        <div class="stat-card card-orange">
+            <div class="stat-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="stat-details">
+                <h3>@Model.TotalActivity</h3>
+                <p>Lượt chơi</p>
+                <span class="stat-change positive">
+                    <i class="fas fa-history"></i> Tổng số trận
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+        <h2 class="section-title">
+            <i class="fas fa-bolt"></i> Thao tác nhanh
+        </h2>
+        <div class="actions-grid">
+            <a asp-page="/Players/Index" class="action-card">
+                <div class="action-icon purple">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Quản lý người chơi</h3>
+                    <p>Xem, thêm và chỉnh sửa thông tin người chơi</p>
+                </div>
+                <i class="fas fa-arrow-right action-arrow"></i>
+            </a>
+
+            <a asp-page="/Items/Index" class="action-card">
+                <div class="action-icon blue">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Quản lý vật phẩm</h3>
+                    <p>Cập nhật và quản lý các vật phẩm trong game</p>
+                </div>
+                <i class="fas fa-arrow-right action-arrow"></i>
+            </a>
+
+            <a asp-page="/Reports/Index" class="action-card">
+                <div class="action-icon green">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Xem báo cáo</h3>
+                    <p>Kiểm tra thống kê và báo cáo chi tiết</p>
+                </div>
+                <i class="fas fa-arrow-right action-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity-section">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i> Hoạt động gần đây
+        </h2>
+        <div class="activity-list">
+            @if (Model.RecentActivities.Any())
+            {
+                @foreach (var activity in Model.RecentActivities)
+                {
+                    <div class="activity-item">
+                        <div class="activity-icon @activity.ColorClass">
+                            <i class="@activity.IconClass"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>@activity.Type</h4>
+                            <p>@activity.Description</p>
+                        </div>
+                        <span class="activity-time">@activity.Time.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted" style="padding: 20px; text-align: center;">Chưa có hoạt động nào.</p>
+            }
+        </div>
+    </div>
+</div>

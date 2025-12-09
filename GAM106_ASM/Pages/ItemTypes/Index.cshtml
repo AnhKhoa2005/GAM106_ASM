@@ -1,0 +1,205 @@
+@page
+@model GAM106_ASM.Pages.ItemTypes.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Loại vật phẩm";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-tags"></i> Quản lý Loại vật phẩm</h1>
+        <p>Quản lý các loại vật phẩm trong game (Vũ khí, Giáp, Thuốc...)</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm loại vật phẩm
+    </button>
+</div>
+
+<!-- Search -->
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm loại vật phẩm..." onkeyup="filterTable()">
+    </div>
+</div>
+
+<!-- ItemTypes Table -->
+<div class="table-container">
+    <table class="data-table" id="itemTypesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên loại vật phẩm</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var type in Model.ItemTypes)
+            {
+                <tr>
+                    <td>@type.ItemTypeId</td>
+                    <td>@type.ItemTypeName</td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@type.ItemTypeId)" title="Sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@type.ItemTypeId, '@type.ItemTypeName')" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="itemTypeModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm loại vật phẩm mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="itemTypeForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="itemTypeId" name="ItemTypeId">
+
+            <div class="form-group">
+                <label for="itemTypeName">Tên loại vật phẩm <span class="required">*</span></label>
+                <input type="text" id="itemTypeName" name="ItemTypeName" required
+                    placeholder="Ví dụ: Vũ khí, Giáp, Thuốc...">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa loại vật phẩm <strong id="deleteItemTypeName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Thêm loại vật phẩm mới';
+        document.getElementById('itemTypeForm').reset();
+        document.getElementById('itemTypeId').value = '';
+        document.getElementById('itemTypeModal').classList.add('active');
+    }
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`/api/Admin/ItemTypes/${id}`);
+            const itemType = await response.json();
+
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa loại vật phẩm';
+            document.getElementById('itemTypeId').value = itemType.itemTypeId;
+            document.getElementById('itemTypeName').value = itemType.itemTypeName;
+
+            document.getElementById('itemTypeModal').classList.add('active');
+        } catch (error) {
+            alert('Lỗi khi tải thông tin: ' + error.message);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('itemTypeModal').classList.remove('active');
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const itemTypeId = formData.get('ItemTypeId');
+        const data = {
+            itemTypeId: itemTypeId ? parseInt(itemTypeId) : 0,
+            itemTypeName: formData.get('ItemTypeName')
+        };
+
+        try {
+            const url = itemTypeId ? `/api/Admin/ItemTypes/${itemTypeId}` : '/api/Admin/ItemTypes';
+            const method = itemTypeId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Lỗi: ' + error);
+            }
+        } catch (error) {
+            alert('Lỗi khi lưu: ' + error.message);
+        }
+
+        return false;
+    }
+
+    function openDeleteModal(id, name) {
+        currentDeleteId = id;
+        document.getElementById('deleteItemTypeName').textContent = name;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentDeleteId = null;
+    }
+
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+
+        try {
+            await fetch(`/api/Admin/ItemTypes/${currentDeleteId}`, {
+                method: 'DELETE'
+            });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+
+    function filterTable() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const table = document.getElementById('itemTypesTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const name = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            rows[i].style.display = name.includes(searchValue) ? '' : 'none';
+        }
+    }
+</script>
+
+<link rel="stylesheet" href="~/css/crud-page.css" asp-append-version="true" />

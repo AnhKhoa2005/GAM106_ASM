@@ -1,0 +1,279 @@
+@page
+@model GAM106_ASM.Pages.Items.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Vật phẩm";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-shopping-bag"></i> Quản lý Vật phẩm</h1>
+        <p>Quản lý tất cả vật phẩm trong game</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm vật phẩm
+    </button>
+</div>
+
+<!-- Search and Filter -->
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên vật phẩm..." onkeyup="filterTable()">
+    </div>
+    <div class="filter-group">
+        <select id="typeFilter" onchange="filterTable()">
+            <option value="">Tất cả loại</option>
+            @foreach (var type in Model.ItemTypes)
+            {
+                <option value="@type.ItemTypeId">@type.ItemTypeName</option>
+            }
+        </select>
+    </div>
+</div>
+
+<!-- Items Table -->
+<div class="table-container">
+    <table class="data-table" id="itemsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên vật phẩm</th>
+                <th>Loại</th>
+                <th>Giá mua</th>
+                <th>Hình ảnh</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr data-type-id="@item.ItemTypeId">
+                    <td>@item.ItemSheetId</td>
+                    <td>@item.ItemVersionName</td>
+                    <td><span class="badge badge-blue">@item.ItemType?.ItemTypeName</span></td>
+                    <td>@item.PurchaseValue.ToString("N0") đ</td>
+                    <td>@(string.IsNullOrEmpty(item.ImageUrl) ? "-" : item.ImageUrl)</td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@item.ItemSheetId)" title="Sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@item.ItemSheetId, '@item.ItemVersionName')" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="itemModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm vật phẩm mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="itemForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="itemSheetId" name="ItemSheetId">
+
+            <div class="form-group">
+                <label for="itemVersionName">Tên vật phẩm <span class="required">*</span></label>
+                <input type="text" id="itemVersionName" name="ItemVersionName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="itemTypeId">Loại vật phẩm <span class="required">*</span></label>
+                <select id="itemTypeId" name="ItemTypeId" required>
+                    <option value="">-- Chọn loại --</option>
+                    @foreach (var type in Model.ItemTypes)
+                    {
+                        <option value="@type.ItemTypeId">@type.ItemTypeName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="purchaseValue">Giá mua (đ) <span class="required">*</span></label>
+                <input type="number" id="purchaseValue" name="PurchaseValue" value="0" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="imageUrl">URL hình ảnh</label>
+                <input type="text" id="imageUrl" name="ImageUrl" placeholder="https://example.com/image.png">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa vật phẩm <strong id="deleteItemName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Thêm vật phẩm mới';
+        document.getElementById('itemForm').reset();
+        document.getElementById('itemSheetId').value = '';
+        document.getElementById('itemModal').classList.add('active');
+    }
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`/api/Admin/Items/${id}`);
+            const item = await response.json();
+
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa vật phẩm';
+            document.getElementById('itemSheetId').value = item.itemSheetId;
+            document.getElementById('itemVersionName').value = item.itemVersionName;
+            document.getElementById('itemTypeId').value = item.itemTypeId;
+            document.getElementById('purchaseValue').value = item.purchaseValue;
+            document.getElementById('imageUrl').value = item.imageUrl || '';
+
+            document.getElementById('itemModal').classList.add('active');
+        } catch (error) {
+            alert('Lỗi khi tải thông tin vật phẩm: ' + error.message);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('itemModal').classList.remove('active');
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+
+        // Validate dữ liệu trước khi gửi
+        const itemVersionName = formData.get('ItemVersionName');
+        if (!itemVersionName || itemVersionName.trim() === '') {
+            alert('Vui lòng nhập tên vật phẩm.');
+            return false;
+        }
+
+        const itemTypeIdStr = formData.get('ItemTypeId');
+        if (!itemTypeIdStr) {
+            alert('Vui lòng chọn loại vật phẩm.');
+            return false;
+        }
+
+        const purchaseValueStr = formData.get('PurchaseValue');
+        // Kiểm tra nếu giá trị rỗng (null hoặc chuỗi rỗng)
+        if (purchaseValueStr === null || purchaseValueStr.trim() === '') {
+            alert('Vui lòng nhập giá mua.');
+            return false;
+        }
+
+        const purchaseValue = parseFloat(purchaseValueStr);
+        if (isNaN(purchaseValue) || purchaseValue < 0) {
+            alert('Giá mua không hợp lệ (phải >= 0).');
+            return false;
+        }
+
+        const itemSheetId = formData.get('ItemSheetId');
+        const data = {
+            itemSheetId: itemSheetId ? parseInt(itemSheetId) : 0,
+            itemVersionName: itemVersionName,
+            itemTypeId: parseInt(itemTypeIdStr),
+            purchaseValue: purchaseValue, // Giá trị 0 vẫn được chấp nhận
+            imageUrl: formData.get('ImageUrl') || null
+        };
+
+        try {
+            const url = itemSheetId ? `/api/Admin/Items/${itemSheetId}` : '/api/Admin/Items';
+            const method = itemSheetId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Lỗi: ' + error);
+            }
+        } catch (error) {
+            alert('Lỗi khi lưu: ' + error.message);
+        }
+
+        return false;
+    }
+
+    function openDeleteModal(id, name) {
+        currentDeleteId = id;
+        document.getElementById('deleteItemName').textContent = name;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentDeleteId = null;
+    }
+
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+
+        try {
+            await fetch(`/api/Admin/Items/${currentDeleteId}`, {
+                method: 'DELETE'
+            });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+
+    function filterTable() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const typeValue = document.getElementById('typeFilter').value;
+        const table = document.getElementById('itemsTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const name = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            const typeId = rows[i].getAttribute('data-type-id');
+
+            const matchesSearch = name.includes(searchValue);
+            const matchesType = !typeValue || typeId === typeValue;
+
+            rows[i].style.display = (matchesSearch && matchesType) ? '' : 'none';
+        }
+    }
+</script>
+
+<link rel="stylesheet" href="~/css/crud-page.css" asp-append-version="true" />

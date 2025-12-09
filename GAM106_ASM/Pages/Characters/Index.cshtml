@@ -1,0 +1,151 @@
+@page
+@model GAM106_ASM.Pages.Characters.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Nhân vật";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-user-ninja"></i> Quản lý Nhân vật</h1>
+        <p>Quản lý tất cả nhân vật trong game</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm nhân vật
+    </button>
+</div>
+
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm nhân vật..." onkeyup="filterTable()">
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="data-table" id="charactersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên nhân vật</th>
+                <th>Người chơi</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var character in Model.Characters)
+            {
+                <tr>
+                    <td>@character.CharacterId</td>
+                    <td>@character.CharacterName</td>
+                    <td><span class="badge badge-purple">@(character.Player?.EmailAccount ?? "Chưa gán")</span></td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@character.CharacterId)"><i
+                                class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@character.CharacterId, '@character.CharacterName')"><i
+                                class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="characterModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm nhân vật mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="characterForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="characterId">
+            <div class="form-group">
+                <label>Tên nhân vật <span class="required">*</span></label>
+                <input type="text" id="characterName" required>
+            </div>
+            <div class="form-group">
+                <label>Người chơi</label>
+                <select id="playerId">
+                    <option value="">-- Không gán --</option>
+                    @foreach (var player in Model.Players)
+                    {
+                        <option value="@player.PlayerId">@player.EmailAccount</option>
+                    }
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa <strong id="deleteCharacterName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()"><i class="fas fa-trash"></i>
+                Xóa</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+    function openCreateModal() { document.getElementById('modalTitle').textContent = 'Thêm nhân vật mới'; document.getElementById('characterForm').reset(); document.getElementById('characterId').value = ''; document.getElementById('characterModal').classList.add('active'); }
+    async function openEditModal(id) { const r = await fetch(`/api/Admin/Characters/${id}`); const c = await r.json(); document.getElementById('modalTitle').textContent = 'Chỉnh sửa nhân vật'; document.getElementById('characterId').value = c.characterId; document.getElementById('characterName').value = c.characterName; document.getElementById('playerId').value = c.playerId || ''; document.getElementById('characterModal').classList.add('active'); }
+    function closeModal() { document.getElementById('characterModal').classList.remove('active'); }
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('characterId').value;
+        const playerId = document.getElementById('playerId').value;
+        const data = {
+            characterId: id ? parseInt(id) : 0,
+            characterName: document.getElementById('characterName').value,
+            playerId: playerId ? parseInt(playerId) : null
+        };
+        try {
+            const url = id ? `/api/Admin/Characters/${id}` : '/api/Admin/Characters';
+            const response = await fetch(url, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                alert('Lỗi khi lưu nhân vật');
+            }
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+        return false;
+    }
+    function openDeleteModal(id, name) { currentDeleteId = id; document.getElementById('deleteCharacterName').textContent = name; document.getElementById('deleteModal').classList.add('active'); }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+        try {
+            await fetch(`/api/Admin/Characters/${currentDeleteId}`, { method: 'DELETE' });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+    function filterTable() { const s = document.getElementById('searchInput').value.toLowerCase(); const rows = document.getElementById('charactersTable').getElementsByTagName('tr'); for (let i = 1; i < rows.length; i++) { rows[i].style.display = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase().includes(s) ? '' : 'none'; } }
+</script>
+<link rel="stylesheet" href="~/css/crud-page.css" />

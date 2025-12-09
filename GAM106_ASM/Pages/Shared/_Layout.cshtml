@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Game Management System</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Game Admin</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-details">
+                        <h4>@(User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value?.Split('@')[0] ?? "Admin")
+                        </h4>
+                        <span class="badge badge-admin">Administrator</span>
+                    </div>
+                </div>
+
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/AdminDashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Players/Index">
+                            <i class="fas fa-users"></i>
+                            <span>Người chơi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Items/Index">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Vật phẩm</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/ItemTypes/Index">
+                            <i class="fas fa-tags"></i>
+                            <span>Loại vật phẩm</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Quests/Index">
+                            <i class="fas fa-scroll"></i>
+                            <span>Nhiệm vụ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Monsters/Index">
+                            <i class="fas fa-dragon"></i>
+                            <span>Quái vật</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Vehicles/Index">
+                            <i class="fas fa-car"></i>
+                            <span>Phương tiện</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Resources/Index">
+                            <i class="fas fa-gem"></i>
+                            <span>Tài nguyên</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Characters/Index">
+                            <i class="fas fa-user-ninja"></i>
+                            <span>Nhân vật</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/GameModes/Index">
+                            <i class="fas fa-gamepad"></i>
+                            <span>Chế độ chơi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Reports/Index">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Báo cáo</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="sidebar-footer">
+                    <a class="logout-btn" href="/">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Đăng xuất</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="breadcrumb">
+                        <i class="fas fa-home"></i>
+                        <span>@ViewData["Title"]</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://ui-avatars.com/api/?name=@(User.Identity?.Name ?? "Admin")&background=667eea&color=fff"
+                                alt="Admin">
+                            <span
+                                class="ms-2 d-none d-lg-inline text-white">@(User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                                                                ?? "Admin")</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/Index?handler=Logout"><i
+                                        class="fas fa-sign-out-alt me-2"></i> Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content-area">
+                @RenderBody()
+            </main>
+
+            <footer class="main-footer">
+                <div class="footer-content">
+                    <p>&copy; 2025 Game Management System. All rights reserved.</p>
+                    <div class="footer-links">
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">Support</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

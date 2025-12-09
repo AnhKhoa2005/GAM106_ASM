@@ -1,0 +1,136 @@
+@page
+@model GAM106_ASM.Pages.GameModes.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Chế độ chơi";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-gamepad"></i> Quản lý Chế độ chơi</h1>
+        <p>Quản lý các chế độ chơi trong game</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm chế độ chơi
+    </button>
+</div>
+
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm chế độ chơi..." onkeyup="filterTable()">
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="data-table" id="gameModesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên chế độ chơi</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var mode in Model.GameModes)
+            {
+                <tr>
+                    <td>@mode.ModeId</td>
+                    <td>@mode.ModeName</td>
+                    <td class="action-buttons">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@mode.ModeId)"><i
+                                class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-delete" onclick="openDeleteModal(@mode.ModeId, '@mode.ModeName')"><i
+                                class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="gameModeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm chế độ chơi mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="gameModeForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="modeId">
+            <div class="form-group">
+                <label>Tên chế độ chơi <span class="required">*</span></label>
+                <input type="text" id="modeName" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa <strong id="deleteGameModeName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()"><i class="fas fa-trash"></i>
+                Xóa</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+    function openCreateModal() { document.getElementById('modalTitle').textContent = 'Thêm chế độ chơi mới'; document.getElementById('gameModeForm').reset(); document.getElementById('modeId').value = ''; document.getElementById('gameModeModal').classList.add('active'); }
+    async function openEditModal(id) { const r = await fetch(`/api/Admin/GameModes/${id}`); const g = await r.json(); document.getElementById('modalTitle').textContent = 'Chỉnh sửa chế độ chơi'; document.getElementById('modeId').value = g.modeId; document.getElementById('modeName').value = g.modeName; document.getElementById('gameModeModal').classList.add('active'); }
+    function closeModal() { document.getElementById('gameModeModal').classList.remove('active'); }
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('modeId').value;
+        const data = {
+            modeId: id ? parseInt(id) : 0,
+            modeName: document.getElementById('modeName').value
+        };
+        try {
+            const url = id ? `/api/Admin/GameModes/${id}` : '/api/Admin/GameModes';
+            const response = await fetch(url, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                alert('Lỗi khi lưu chế độ chơi');
+            }
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+        return false;
+    }
+    function openDeleteModal(id, name) { currentDeleteId = id; document.getElementById('deleteGameModeName').textContent = name; document.getElementById('deleteModal').classList.add('active'); }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+        try {
+            await fetch(`/api/Admin/GameModes/${currentDeleteId}`, { method: 'DELETE' });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+    function filterTable() { const s = document.getElementById('searchInput').value.toLowerCase(); const rows = document.getElementById('gameModesTable').getElementsByTagName('tr'); for (let i = 1; i < rows.length; i++) { const name = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase(); rows[i].style.display = name.includes(s) ? '' : 'none'; } }
+</script>
+<link rel="stylesheet" href="~/css/crud-page.css" />

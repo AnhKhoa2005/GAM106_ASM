@@ -1,0 +1,144 @@
+@page
+@model GAM106_ASM.Pages.Vehicles.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Phương tiện";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-car"></i> Quản lý Phương tiện</h1>
+        <p>Quản lý tất cả phương tiện trong game</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm phương tiện
+    </button>
+</div>
+
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm phương tiện..." onkeyup="filterTable()">
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="data-table" id="vehiclesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên phương tiện</th>
+                <th>Giá trị mua</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in Model.Vehicles)
+            {
+                <tr>
+                    <td>@vehicle.VehicleId</td>
+                    <td>@vehicle.VehicleName</td>
+                    <td>@vehicle.PurchaseValue.ToString("N0") đ</td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@vehicle.VehicleId)"><i
+                                class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@vehicle.VehicleId, '@vehicle.VehicleName')"><i
+                                class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="vehicleModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm phương tiện mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="vehicleForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="vehicleId">
+            <div class="form-group">
+                <label>Tên phương tiện <span class="required">*</span></label>
+                <input type="text" id="vehicleName" required>
+            </div>
+            <div class="form-group">
+                <label>Giá trị mua (đ)</label>
+                <input type="number" id="purchaseValue" value="0" min="0">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa <strong id="deleteVehicleName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()"><i class="fas fa-trash"></i>
+                Xóa</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+    function openCreateModal() { document.getElementById('modalTitle').textContent = 'Thêm phương tiện mới'; document.getElementById('vehicleForm').reset(); document.getElementById('vehicleId').value = ''; document.getElementById('vehicleModal').classList.add('active'); }
+    async function openEditModal(id) { const r = await fetch(`/api/Admin/Vehicles/${id}`); const v = await r.json(); document.getElementById('modalTitle').textContent = 'Chỉnh sửa phương tiện'; document.getElementById('vehicleId').value = v.vehicleId; document.getElementById('vehicleName').value = v.vehicleName; document.getElementById('purchaseValue').value = v.purchaseValue; document.getElementById('vehicleModal').classList.add('active'); }
+    function closeModal() { document.getElementById('vehicleModal').classList.remove('active'); }
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('vehicleId').value;
+        const data = {
+            vehicleId: id ? parseInt(id) : 0,
+            vehicleName: document.getElementById('vehicleName').value,
+            purchaseValue: parseFloat(document.getElementById('purchaseValue').value)
+        };
+        try {
+            const url = id ? `/api/Admin/Vehicles/${id}` : '/api/Admin/Vehicles';
+            const response = await fetch(url, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                alert('Lỗi khi lưu phương tiện');
+            }
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+        return false;
+    }
+    function openDeleteModal(id, name) { currentDeleteId = id; document.getElementById('deleteVehicleName').textContent = name; document.getElementById('deleteModal').classList.add('active'); }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+        try {
+            await fetch(`/api/Admin/Vehicles/${currentDeleteId}`, { method: 'DELETE' });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+    function filterTable() { const s = document.getElementById('searchInput').value.toLowerCase(); const rows = document.getElementById('vehiclesTable').getElementsByTagName('tr'); for (let i = 1; i < rows.length; i++) { rows[i].style.display = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase().includes(s) ? '' : 'none'; } }
+</script>
+<link rel="stylesheet" href="~/css/crud-page.css" />

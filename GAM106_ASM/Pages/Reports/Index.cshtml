@@ -1,0 +1,292 @@
+@page
+@model GAM106_ASM.Pages.Reports.IndexModel
+@{
+    ViewData["Title"] = "Báo cáo & Thống kê";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-chart-line"></i> Báo cáo & Thống kê</h1>
+        <p>Xem báo cáo và thống kê chi tiết về hệ thống game</p>
+    </div>
+</div>
+
+<!-- Report Cards -->
+<div class="reports-grid">
+    <!-- Transactions Report -->
+    <div class="report-card">
+        <div class="report-header">
+            <div class="report-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="report-info">
+                <h3>Lịch sử Giao dịch</h3>
+                <p>@Model.TotalTransactions giao dịch</p>
+            </div>
+        </div>
+        <div class="report-body">
+            <div class="report-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Người chơi</th>
+                            <th>Loại</th>
+                            <th>Số tiền</th>
+                            <th>Ngày</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var trans in Model.RecentTransactions.Take(5))
+                        {
+                            <tr>
+                                <td>@trans.Player?.EmailAccount</td>
+                                <td><span
+                                        class="badge badge-@(trans.TransactionType == "Buy" ? "blue" : "green")">@trans.TransactionType</span>
+                                </td>
+                                <td>@trans.TransactionValue.ToString("N0") đ</td>
+                                <td>@trans.TransactionTime.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Play History Report -->
+    <div class="report-card">
+        <div class="report-header">
+            <div class="report-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="report-info">
+                <h3>Lịch sử Chơi</h3>
+                <p>@Model.TotalPlaySessions phiên chơi</p>
+            </div>
+        </div>
+        <div class="report-body">
+            <div class="report-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Người chơi</th>
+                            <th>Chế độ</th>
+                            <th>Điểm</th>
+                            <th>Ngày</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var history in Model.RecentPlayHistory.Take(5))
+                        {
+                            <tr>
+                                <td>@history.Player?.EmailAccount</td>
+                                <td><span class="badge badge-purple">@history.Mode?.ModeName</span></td>
+                                <td>@history.StartTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(history.EndTime?.ToString("dd/MM/yyyy HH:mm") ?? "Đang chơi")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monster Kills Report -->
+    <div class="report-card">
+        <div class="report-header">
+            <div class="report-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <i class="fas fa-skull-crossbones"></i>
+            </div>
+            <div class="report-info">
+                <h3>Thành tích Giết quái</h3>
+                <p>Top người chơi</p>
+            </div>
+        </div>
+        <div class="report-body">
+            <div class="report-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Người chơi</th>
+                            <th>Quái vật</th>
+                            <th>Số lượng</th>
+                            <th>Ngày gần nhất</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var kill in Model.TopMonsterKills.Take(5))
+                        {
+                            <tr>
+                                <td>@kill.Player?.EmailAccount</td>
+                                <td>@kill.Monster?.MonsterName</td>
+                                <td><span class="badge badge-red">@kill.Quantity</span></td>
+                                <td>@kill.KillTime.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Gathering Report -->
+    <div class="report-card">
+        <div class="report-header">
+            <div class="report-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <i class="fas fa-seedling"></i>
+            </div>
+            <div class="report-info">
+                <h3>Thu hoạch Tài nguyên</h3>
+                <p>Tài nguyên phổ biến</p>
+            </div>
+        </div>
+        <div class="report-body">
+            <div class="report-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Người chơi</th>
+                            <th>Tài nguyên</th>
+                            <th>Số lượng</th>
+                            <th>Ngày</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var gather in Model.RecentResourceGathering.Take(5))
+                        {
+                            <tr>
+                                <td>@gather.Player?.EmailAccount</td>
+                                <td>@gather.Resource?.ResourceName</td>
+                                <td><span class="badge badge-green">@gather.Quantity</span></td>
+                                <td>@gather.GatheringTime.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Quests Report -->
+    <div class="report-card">
+        <div class="report-header">
+            <div class="report-icon" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="report-info">
+                <h3>Tiến độ Nhiệm vụ</h3>
+                <p>Nhiệm vụ đang thực hiện</p>
+            </div>
+        </div>
+        <div class="report-body">
+            <div class="report-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Người chơi</th>
+                            <th>Nhiệm vụ</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pq in Model.RecentPlayerQuests.Take(5))
+                        {
+                            <tr>
+                                <td>@pq.Player?.EmailAccount</td>
+                                <td>@pq.Quest?.QuestName</td>
+                                <td><span
+                                        class="badge badge-@(pq.Status == "Completed" ? "green" : "orange")">@pq.Status</span>
+                                </td>
+                                <td>@(pq.CompletionTime?.ToString("dd/MM/yyyy") ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .report-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition-normal);
+    }
+
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .report-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .report-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .report-info h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .report-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .report-body {
+        padding: 1.5rem;
+    }
+
+    .report-table {
+        overflow-x: auto;
+    }
+
+    .report-table .data-table {
+        margin: 0;
+    }
+
+    .report-table .data-table th {
+        font-size: 0.85rem;
+        padding: 0.75rem;
+    }
+
+    .report-table .data-table td {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+    }
+
+    @@media (max-width: 768px) {
+        .reports-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="~/css/crud-page.css" asp-append-version="true" />

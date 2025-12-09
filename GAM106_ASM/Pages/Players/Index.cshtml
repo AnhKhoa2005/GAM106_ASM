@@ -1,0 +1,265 @@
+@page
+@model GAM106_ASM.Pages.Players.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Người chơi";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-users"></i> Quản lý Người chơi</h1>
+        <p>Xem và quản lý tất cả người chơi trong hệ thống</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm người chơi
+    </button>
+</div>
+
+<!-- Search and Filter -->
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm theo email..." onkeyup="filterTable()">
+    </div>
+    <div class="filter-group">
+        <select id="roleFilter" onchange="filterTable()">
+            <option value="">Tất cả vai trò</option>
+            <option value="Admin">Admin</option>
+            <option value="Player">Player</option>
+        </select>
+    </div>
+</div>
+
+<!-- Players Table -->
+<div class="table-container">
+    <table class="data-table" id="playersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Experience</th>
+                <th>Health</th>
+                <th>Food</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var player in Model.Players)
+            {
+                <tr>
+                    <td>@player.PlayerId</td>
+                    <td>@player.EmailAccount</td>
+                    <td><span class="badge badge-@(player.Role == "Admin" ? "purple" : "blue")">@player.Role</span></td>
+                    <td>@player.ExperiencePoints</td>
+                    <td>@player.HealthBar</td>
+                    <td>@player.FoodBar</td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@player.PlayerId)" title="Sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@player.PlayerId, '@player.EmailAccount')" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="playerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm người chơi mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="playerForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="playerId" name="PlayerId">
+
+            <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="EmailAccount" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mật khẩu <span class="required">*</span></label>
+                <input type="password" id="password" name="LoginPassword" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Vai trò <span class="required">*</span></label>
+                <select id="role" name="Role" required>
+                    <option value="Player">Player</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="exp">Experience Points</label>
+                    <input type="number" id="exp" name="ExperiencePoints" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="health">Health Bar</label>
+                    <input type="number" id="health" name="HealthBar" value="100" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="food">Food Bar</label>
+                    <input type="number" id="food" name="FoodBar" value="100" max="100">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa người chơi <strong id="deletePlayerEmail"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Thêm người chơi mới';
+        document.getElementById('playerForm').reset();
+        document.getElementById('playerId').value = '';
+        document.getElementById('playerModal').classList.add('active');
+    }
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`/api/Admin/Players/${id}`);
+            const player = await response.json();
+
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa người chơi';
+            document.getElementById('playerId').value = player.playerId;
+            document.getElementById('email').value = player.emailAccount;
+            document.getElementById('password').value = player.loginPassword;
+            document.getElementById('role').value = player.role;
+            document.getElementById('exp').value = player.experiencePoints;
+            document.getElementById('health').value = player.healthBar;
+            document.getElementById('food').value = player.foodBar;
+
+            document.getElementById('playerModal').classList.add('active');
+        } catch (error) {
+            alert('Lỗi khi tải thông tin người chơi: ' + error.message);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('playerModal').classList.remove('active');
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const playerId = formData.get('PlayerId');
+        const data = {
+            playerId: playerId ? parseInt(playerId) : 0,
+            emailAccount: formData.get('EmailAccount'),
+            loginPassword: formData.get('LoginPassword'),
+            role: formData.get('Role'),
+            experiencePoints: parseInt(formData.get('ExperiencePoints')),
+            healthBar: parseInt(formData.get('HealthBar')),
+            foodBar: parseInt(formData.get('FoodBar'))
+        };
+
+        try {
+            const url = playerId ? `/api/Admin/Players/${playerId}` : '/api/Admin/Players';
+            const method = playerId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Lỗi: ' + error);
+            }
+        } catch (error) {
+            alert('Lỗi khi lưu: ' + error.message);
+        }
+
+        return false;
+    }
+
+    function openDeleteModal(id, email) {
+        currentDeleteId = id;
+        document.getElementById('deletePlayerEmail').textContent = email;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentDeleteId = null;
+    }
+
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+
+        try {
+            await fetch(`/api/Admin/Players/${currentDeleteId}`, {
+                method: 'DELETE'
+            });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+
+    function filterTable() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const roleValue = document.getElementById('roleFilter').value;
+        const table = document.getElementById('playersTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const email = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            const role = rows[i].getElementsByTagName('td')[2].textContent;
+
+            const matchesSearch = email.includes(searchValue);
+            const matchesRole = !roleValue || role.includes(roleValue);
+
+            rows[i].style.display = (matchesSearch && matchesRole) ? '' : 'none';
+        }
+    }
+</script>
+
+<link rel="stylesheet" href="~/css/crud-page.css" asp-append-version="true" />

@@ -1,0 +1,144 @@
+@page
+@model GAM106_ASM.Pages.Resources.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Tài nguyên";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-gem"></i> Quản lý Tài nguyên</h1>
+        <p>Quản lý tất cả tài nguyên trong game (Gỗ, Đá, Quặng...)</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm tài nguyên
+    </button>
+</div>
+
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm tài nguyên..." onkeyup="filterTable()">
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="data-table" id="resourcesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên tài nguyên</th>
+                <th>Mô tả</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var resource in Model.Resources)
+            {
+                <tr>
+                    <td>@resource.ResourceId</td>
+                    <td>@resource.ResourceName</td>
+                    <td>@resource.Description</td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@resource.ResourceId)"><i
+                                class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@resource.ResourceId, '@resource.ResourceName')"><i
+                                class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="resourceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm tài nguyên mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="resourceForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="resourceId">
+            <div class="form-group">
+                <label>Tên tài nguyên <span class="required">*</span></label>
+                <input type="text" id="resourceName" required>
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="description" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa <strong id="deleteResourceName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()"><i class="fas fa-trash"></i>
+                Xóa</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+    function openCreateModal() { document.getElementById('modalTitle').textContent = 'Thêm tài nguyên mới'; document.getElementById('resourceForm').reset(); document.getElementById('resourceId').value = ''; document.getElementById('resourceModal').classList.add('active'); }
+    async function openEditModal(id) { const r = await fetch(`/api/Admin/Resources/${id}`); const res = await r.json(); document.getElementById('modalTitle').textContent = 'Chỉnh sửa tài nguyên'; document.getElementById('resourceId').value = res.resourceId; document.getElementById('resourceName').value = res.resourceName; document.getElementById('description').value = res.description || ''; document.getElementById('resourceModal').classList.add('active'); }
+    function closeModal() { document.getElementById('resourceModal').classList.remove('active'); }
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('resourceId').value;
+        const data = {
+            resourceId: id ? parseInt(id) : 0,
+            resourceName: document.getElementById('resourceName').value,
+            description: document.getElementById('description').value
+        };
+        try {
+            const url = id ? `/api/Admin/Resources/${id}` : '/api/Admin/Resources';
+            const response = await fetch(url, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                alert('Lỗi khi lưu tài nguyên');
+            }
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+        return false;
+    }
+    function openDeleteModal(id, name) { currentDeleteId = id; document.getElementById('deleteResourceName').textContent = name; document.getElementById('deleteModal').classList.add('active'); }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+        try {
+            await fetch(`/api/Admin/Resources/${currentDeleteId}`, { method: 'DELETE' });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+    function filterTable() { const s = document.getElementById('searchInput').value.toLowerCase(); const rows = document.getElementById('resourcesTable').getElementsByTagName('tr'); for (let i = 1; i < rows.length; i++) { rows[i].style.display = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase().includes(s) ? '' : 'none'; } }
+</script>
+<link rel="stylesheet" href="~/css/crud-page.css" />

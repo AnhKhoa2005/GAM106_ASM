@@ -1,0 +1,213 @@
+@page
+@model GAM106_ASM.Pages.Monsters.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Quái vật";
+}
+
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="fas fa-dragon"></i> Quản lý Quái vật</h1>
+        <p>Quản lý tất cả quái vật trong game</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Thêm quái vật
+    </button>
+</div>
+
+<!-- Search -->
+<div class="filter-section">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm quái vật..." onkeyup="filterTable()">
+    </div>
+</div>
+
+<!-- Monsters Table -->
+<div class="table-container">
+    <table class="data-table" id="monstersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên quái vật</th>
+                <th>EXP Reward</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var monster in Model.Monsters)
+            {
+                <tr>
+                    <td>@monster.MonsterId</td>
+                    <td>@monster.MonsterName</td>
+                    <td><span class="badge badge-green">@monster.ExperienceReward EXP</span></td>
+                    <td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="openEditModal(@monster.MonsterId)" title="Sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete"
+                            onclick="openDeleteModal(@monster.MonsterId, '@monster.MonsterName')" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="monsterModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm quái vật mới</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="monsterForm" onsubmit="return handleSubmit(event)">
+            <input type="hidden" id="monsterId" name="MonsterId">
+
+            <div class="form-group">
+                <label for="monsterName">Tên quái vật <span class="required">*</span></label>
+                <input type="text" id="monsterName" name="MonsterName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="experienceReward">EXP Reward</label>
+                <input type="number" id="experienceReward" name="ExperienceReward" value="50" min="0">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h2>Xác nhận xóa</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa quái vật <strong id="deleteMonsterName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDeleteId = null;
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Thêm quái vật mới';
+        document.getElementById('monsterForm').reset();
+        document.getElementById('monsterId').value = '';
+        document.getElementById('monsterModal').classList.add('active');
+    }
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`/api/Admin/Monsters/${id}`);
+            const monster = await response.json();
+
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa quái vật';
+            document.getElementById('monsterId').value = monster.monsterId;
+            document.getElementById('monsterName').value = monster.monsterName;
+            document.getElementById('experienceReward').value = monster.experienceReward;
+
+            document.getElementById('monsterModal').classList.add('active');
+        } catch (error) {
+            alert('Lỗi khi tải thông tin: ' + error.message);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('monsterModal').classList.remove('active');
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const monsterId = formData.get('MonsterId');
+        const data = {
+            monsterId: monsterId ? parseInt(monsterId) : 0,
+            monsterName: formData.get('MonsterName'),
+            experienceReward: parseInt(formData.get('ExperienceReward'))
+        };
+
+        try {
+            const url = monsterId ? `/api/Admin/Monsters/${monsterId}` : '/api/Admin/Monsters';
+            const method = monsterId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok || response.status === 204) {
+                closeModal();
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Lỗi: ' + error);
+            }
+        } catch (error) {
+            alert('Lỗi khi lưu: ' + error.message);
+        }
+
+        return false;
+    }
+
+    function openDeleteModal(id, name) {
+        currentDeleteId = id;
+        document.getElementById('deleteMonsterName').textContent = name;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentDeleteId = null;
+    }
+
+    async function confirmDelete() {
+        if (!currentDeleteId) return;
+
+        try {
+            await fetch(`/api/Admin/Monsters/${currentDeleteId}`, {
+                method: 'DELETE'
+            });
+            closeDeleteModal();
+            location.reload();
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+
+    function filterTable() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const table = document.getElementById('monstersTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const name = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            rows[i].style.display = name.includes(searchValue) ? '' : 'none';
+        }
+    }
+</script>
+
+<link rel="stylesheet" href="~/css/crud-page.css" asp-append-version="true" />
