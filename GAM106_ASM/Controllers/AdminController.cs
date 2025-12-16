@@ -109,7 +109,7 @@ namespace GAM106_ASM.Controllers
 
         // DELETE: api/Admin/Players/5 - Xóa người chơi (CASCADE)
         [HttpDelete("Players/{id}")]
-        public async Task<IActionResult> DeletePlayer(int id)
+        public async Task<IActionResult> DeletePlayer(int id, [FromQuery] bool force = false)
         {
             var player = await _context.Players
                 .Include(p => p.Character)
@@ -123,6 +123,18 @@ namespace GAM106_ASM.Controllers
             if (player == null)
             {
                 return NotFound();
+            }
+
+            bool hasRelatedData = (player.Character != null) ||
+                                  player.Transactions.Any() ||
+                                  player.PlayHistories.Any() ||
+                                  player.PlayerQuests.Any() ||
+                                  player.MonsterKills.Any() ||
+                                  player.ResourceGatherings.Any();
+
+            if (hasRelatedData && !force)
+            {
+                return Conflict(new { message = "Người chơi này có dữ liệu liên quan (Nhân vật, Giao dịch, Lịch sử chơi...). Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
             }
 
             // Xóa tất cả dữ liệu liên quan
@@ -228,12 +240,17 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("Items/{id}")]
-        public async Task<IActionResult> DeleteItem(int id)
+        public async Task<IActionResult> DeleteItem(int id, [FromQuery] bool force = false)
         {
             var item = await _context.ItemSalesSheets
                 .Include(i => i.Transactions)
                 .FirstOrDefaultAsync(i => i.ItemSheetId == id);
             if (item == null) return NotFound();
+
+            if (item.Transactions.Any() && !force)
+            {
+                return Conflict(new { message = "Vật phẩm này đã có giao dịch mua bán. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
+            }
 
             var name = item.ItemVersionName;
 
@@ -297,13 +314,19 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("ItemTypes/{id}")]
-        public async Task<IActionResult> DeleteItemType(int id)
+        public async Task<IActionResult> DeleteItemType(int id, [FromQuery] bool force = false)
         {
             var type = await _context.ItemTypes
                 .Include(t => t.ItemSalesSheets)
                     .ThenInclude(i => i.Transactions)
                 .FirstOrDefaultAsync(t => t.ItemTypeId == id);
             if (type == null) return NotFound();
+
+            bool hasRelatedData = type.ItemSalesSheets.Any();
+            if (hasRelatedData && !force)
+            {
+                return Conflict(new { message = "Loại vật phẩm này đang chứa các vật phẩm khác. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
+            }
 
             // Xóa tất cả items và transactions liên quan
             foreach (var item in type.ItemSalesSheets)
@@ -367,12 +390,17 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("Quests/{id}")]
-        public async Task<IActionResult> DeleteQuest(int id)
+        public async Task<IActionResult> DeleteQuest(int id, [FromQuery] bool force = false)
         {
             var quest = await _context.Quests
                 .Include(q => q.PlayerQuests)
                 .FirstOrDefaultAsync(q => q.QuestId == id);
             if (quest == null) return NotFound();
+
+            if (quest.PlayerQuests.Any() && !force)
+            {
+                return Conflict(new { message = "Nhiệm vụ này đang được thực hiện bởi người chơi. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
+            }
 
             // Xóa lịch sử nhiệm vụ của người chơi
             if (quest.PlayerQuests.Any())
@@ -438,12 +466,17 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("Monsters/{id}")]
-        public async Task<IActionResult> DeleteMonster(int id)
+        public async Task<IActionResult> DeleteMonster(int id, [FromQuery] bool force = false)
         {
             var monster = await _context.Monsters
                 .Include(m => m.MonsterKills)
                 .FirstOrDefaultAsync(m => m.MonsterId == id);
             if (monster == null) return NotFound();
+
+            if (monster.MonsterKills.Any() && !force)
+            {
+                return Conflict(new { message = "Quái vật này đã bị tiêu diệt bởi người chơi. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
+            }
 
             // Xóa lịch sử tiêu diệt
             if (monster.MonsterKills.Any())
@@ -505,12 +538,17 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("Vehicles/{id}")]
-        public async Task<IActionResult> DeleteVehicle(int id)
+        public async Task<IActionResult> DeleteVehicle(int id, [FromQuery] bool force = false)
         {
             var vehicle = await _context.Vehicles
                 .Include(v => v.Transactions)
                 .FirstOrDefaultAsync(v => v.VehicleId == id);
             if (vehicle == null) return NotFound();
+
+            if (vehicle.Transactions.Any() && !force)
+            {
+                return Conflict(new { message = "Phương tiện này đã có giao dịch mua bán. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
+            }
 
             // Xóa các giao dịch liên quan
             if (vehicle.Transactions.Any())
@@ -569,12 +607,17 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("Resources/{id}")]
-        public async Task<IActionResult> DeleteResource(int id)
+        public async Task<IActionResult> DeleteResource(int id, [FromQuery] bool force = false)
         {
             var resource = await _context.Resources
                 .Include(r => r.ResourceGatherings)
                 .FirstOrDefaultAsync(r => r.ResourceId == id);
             if (resource == null) return NotFound();
+
+            if (resource.ResourceGatherings.Any() && !force)
+            {
+                return Conflict(new { message = "Tài nguyên này đã được thu thập bởi người chơi. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
+            }
 
             // Xóa lịch sử thu thập
             if (resource.ResourceGatherings.Any())
@@ -695,21 +738,25 @@ namespace GAM106_ASM.Controllers
         }
 
         [HttpDelete("GameModes/{id}")]
-        public async Task<IActionResult> DeleteGameMode(int id)
+        public async Task<IActionResult> DeleteGameMode(int id, [FromQuery] bool force = false)
         {
-            var gameMode = await _context.GameModes.FindAsync(id);
+            var gameMode = await _context.GameModes
+                .Include(m => m.PlayHistories)
+                .FirstOrDefaultAsync(m => m.ModeId == id);
+
             if (gameMode == null) return NotFound();
 
-            try
+            if (gameMode.PlayHistories.Any() && !force)
             {
-                _context.GameModes.Remove(gameMode);
-                await _context.SaveChangesAsync();
-                return NoContent();
+                return Conflict(new { message = "Chế độ chơi này đã có lịch sử chơi của người chơi. Bạn có chắc chắn muốn xóa không?", requiresConfirmation = true });
             }
-            catch (DbUpdateException)
-            {
-                return BadRequest(new { error = "Không thể xóa chế độ chơi này vì có lịch sử chơi liên quan" });
-            }
+
+            if (gameMode.PlayHistories.Any())
+                _context.PlayHistories.RemoveRange(gameMode.PlayHistories);
+
+            _context.GameModes.Remove(gameMode);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }

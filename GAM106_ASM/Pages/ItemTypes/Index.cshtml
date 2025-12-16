@@ -168,7 +168,19 @@
     function openDeleteModal(id, name) {
         currentDeleteId = id;
         document.getElementById('deleteItemTypeName').textContent = name;
-        document.getElementById('deleteModal').classList.add('active');
+        
+        // Reset modal state
+        const modal = document.getElementById('deleteModal');
+        const warningP = modal.querySelector('.delete-warning p');
+        warningP.innerHTML = 'Bạn có chắc chắn muốn xóa loại vật phẩm <strong id="deleteItemTypeName">' + name + '</strong>?';
+        modal.querySelector('.warning-text').textContent = 'Hành động này không thể hoàn tác!';
+        
+        const deleteBtn = modal.querySelector('.btn-danger');
+        deleteBtn.onclick = () => confirmDelete(false);
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa';
+        deleteBtn.disabled = false;
+
+        modal.classList.add('active');
     }
 
     function closeDeleteModal() {
@@ -176,17 +188,50 @@
         currentDeleteId = null;
     }
 
-    async function confirmDelete() {
+    async function confirmDelete(force = false) {
         if (!currentDeleteId) return;
 
+        const deleteBtn = document.querySelector('#deleteModal .btn-danger');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        deleteBtn.disabled = true;
+
         try {
-            await fetch(`/api/Admin/ItemTypes/${currentDeleteId}`, {
+            const url = force 
+                ? `/api/Admin/ItemTypes/${currentDeleteId}?force=true` 
+                : `/api/Admin/ItemTypes/${currentDeleteId}`;
+
+            const response = await fetch(url, {
                 method: 'DELETE'
             });
-            closeDeleteModal();
-            location.reload();
+
+            if (response.ok || response.status === 204) {
+                closeDeleteModal();
+                location.reload();
+            } else if (response.status === 409) {
+                const data = await response.json();
+                if (data.requiresConfirmation) {
+                    // Update modal with warning
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('.delete-warning p').textContent = data.message;
+                    modal.querySelector('.warning-text').textContent = "Hành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác!";
+                    
+                    // Update button to force delete
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa tất cả';
+                    deleteBtn.disabled = false;
+                    deleteBtn.onclick = () => confirmDelete(true);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể xóa'));
+                    closeDeleteModal();
+                }
+            } else {
+                const text = await response.text();
+                alert('Lỗi: ' + text);
+                closeDeleteModal();
+            }
         } catch (error) {
             alert('Lỗi: ' + error.message);
+            closeDeleteModal();
         }
     }
 
