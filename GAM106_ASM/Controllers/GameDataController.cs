@@ -4,11 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer; // <-- THÊM DÒNG NÀY
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace GAM106_ASM.Controllers
 {
-    // SỬA: Thêm AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
@@ -29,12 +28,27 @@ namespace GAM106_ASM.Controllers
         [HttpGet("Item/{id}")]
         public async Task<ActionResult<ItemSalesSheet>> GetItemById(int id)
         {
-            var item = await _context.ItemSalesSheets.FindAsync(id);
+            var item = await _context.ItemSalesSheets
+                .Include(i => i.ItemType)
+                .FirstOrDefaultAsync(i => i.ItemSheetId == id);
             if (item == null)
             {
                 return NotFound($"Không tìm thấy Item với ID: {id}");
             }
             return Ok(item);
+        }
+
+        // -------------------------------------------------------------------------
+        // GET danh sách ItemTypes để hiển thị dropdown
+        // GET: api/GameData/ItemTypes
+        // -------------------------------------------------------------------------
+        [HttpGet("ItemTypes")]
+        public async Task<ActionResult<IEnumerable<object>>> GetItemTypes()
+        {
+            var itemTypes = await _context.ItemTypes
+                .Select(it => new { it.ItemTypeId, it.ItemTypeName })
+                .ToListAsync();
+            return Ok(itemTypes);
         }
 
         // =========================================================================
@@ -97,6 +111,7 @@ namespace GAM106_ASM.Controllers
                 return NotFound("Không tìm thấy loại Item 'Vũ Khí'.");
             }
             var weapons = await _context.ItemSalesSheets
+                .Include(item => item.ItemType)
                 .Where(item => item.ItemTypeId == weaponTypeId && item.PurchaseValue > 100)
                 .ToListAsync();
             if (weapons.Count == 0)
@@ -119,6 +134,7 @@ namespace GAM106_ASM.Controllers
             }
             var currentExp = player.ExperiencePoints;
             var purchasableItems = await _context.ItemSalesSheets
+                .Include(item => item.ItemType)
                 .Where(item => item.PurchaseValue <= currentExp)
                 .ToListAsync();
             if (purchasableItems.Count == 0)
@@ -135,6 +151,7 @@ namespace GAM106_ASM.Controllers
         public async Task<ActionResult<IEnumerable<ItemSalesSheet>>> GetDiamondItems()
         {
             var items = await _context.ItemSalesSheets
+                .Include(item => item.ItemType)
                 .Where(item => item.ItemVersionName.ToLower().Contains("kim cương") && item.PurchaseValue < 500)
                 .ToListAsync();
             if (items.Count == 0)
@@ -250,13 +267,14 @@ namespace GAM106_ASM.Controllers
                 .OrderByDescending(result => result.TotalQuantity)
                 .Take(10)
                 .Join(
-                    _context.ItemSalesSheets,
+                    _context.ItemSalesSheets.Include(i => i.ItemType),
                     result => result.ItemSheetId,
                     item => item.ItemSheetId,
                     (result, item) => new
                     {
                         item.ItemVersionName,
                         item.PurchaseValue,
+                        ItemTypeName = item.ItemType.ItemTypeName,
                         result.TotalQuantity
                     }
                 )

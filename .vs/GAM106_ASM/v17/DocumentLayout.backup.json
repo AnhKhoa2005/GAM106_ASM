@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|d:\\fptpolytechnic\\gam106 - l\u1EADp tr\u00ECnh game back-end\\asm\\gam106_asm\\gam106_asm\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|solutionrelative:gam106_asm\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|d:\\fptpolytechnic\\gam106 - l\u1EADp tr\u00ECnh game back-end\\asm\\gam106_asm\\gam106_asm\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|solutionrelative:gam106_asm\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -35,10 +39,6 @@
       "RelativeMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|solutionrelative:gam106_asm\\dtos\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|d:\\fptpolytechnic\\gam106 - l\u1EADp tr\u00ECnh game back-end\\asm\\gam106_asm\\gam106_asm\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|solutionrelative:gam106_asm\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|d:\\fptpolytechnic\\gam106 - l\u1EADp tr\u00ECnh game back-end\\asm\\gam106_asm\\gam106_asm\\controllers\\gamedatacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{90464452-62A8-48FB-96BB-64368A8B877D}|GAM106_ASM\\GAM106_ASM.csproj|solutionrelative:gam106_asm\\controllers\\gamedatacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -66,11 +66,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 13,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "LoginResponse.cs",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\DTOs\\LoginResponse.cs",
               "RelativeDocumentMoniker": "GAM106_ASM\\DTOs\\LoginResponse.cs",
@@ -78,12 +78,11 @@
               "RelativeToolTip": "GAM106_ASM\\DTOs\\LoginResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T15:23:11.075Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T15:23:11.075Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "AdminDashboard.cshtml.cs",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Pages\\AdminDashboard.cshtml.cs",
               "RelativeDocumentMoniker": "GAM106_ASM\\Pages\\AdminDashboard.cshtml.cs",
@@ -91,12 +90,11 @@
               "RelativeToolTip": "GAM106_ASM\\Pages\\AdminDashboard.cshtml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T15:20:03.702Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T15:20:03.702Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "AdminDashboard.cshtml",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Pages\\AdminDashboard.cshtml",
               "RelativeDocumentMoniker": "GAM106_ASM\\Pages\\AdminDashboard.cshtml",
@@ -104,12 +102,11 @@
               "RelativeToolTip": "GAM106_ASM\\Pages\\AdminDashboard.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAI4AAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-08T15:19:37.248Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T15:19:37.248Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "_ViewImports.cshtml",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Pages\\_ViewImports.cshtml",
               "RelativeDocumentMoniker": "GAM106_ASM\\Pages\\_ViewImports.cshtml",
@@ -117,12 +114,11 @@
               "RelativeToolTip": "GAM106_ASM\\Pages\\_ViewImports.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-08T14:58:16.827Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T14:58:16.827Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Index.cshtml.cs",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Pages\\Index.cshtml.cs",
               "RelativeDocumentMoniker": "GAM106_ASM\\Pages\\Index.cshtml.cs",
@@ -130,12 +126,11 @@
               "RelativeToolTip": "GAM106_ASM\\Pages\\Index.cshtml.cs",
               "ViewState": "AgIAAEoAAAAAAAAAAIBJwF0AAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T14:53:37.901Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T14:53:37.901Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Pages\\Index.cshtml",
               "RelativeDocumentMoniker": "GAM106_ASM\\Pages\\Index.cshtml",
@@ -143,18 +138,17 @@
               "RelativeToolTip": "GAM106_ASM\\Pages\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAFYBAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-08T14:51:34.955Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T14:51:34.955Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 0,
               "Title": "AdminController.cs",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Controllers\\AdminController.cs",
               "RelativeDocumentMoniker": "GAM106_ASM\\Controllers\\AdminController.cs",
               "ToolTip": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Controllers\\AdminController.cs",
               "RelativeToolTip": "GAM106_ASM\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAzwJ0CAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABQAAAAAAAAAAAAAwJ0CAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-08T13:58:12.311Z",
               "EditorCaption": ""
@@ -169,12 +163,11 @@
               "RelativeToolTip": "GAM106_ASM\\Controllers\\AuthController.cs",
               "ViewState": "AgIAAEIAAAAAAAAAAAAgwGgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T13:47:59.234Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T13:47:59.234Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "LoginRequest.cs",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\DTOs\\LoginRequest.cs",
               "RelativeDocumentMoniker": "GAM106_ASM\\DTOs\\LoginRequest.cs",
@@ -182,8 +175,7 @@
               "RelativeToolTip": "GAM106_ASM\\DTOs\\LoginRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T13:47:17.246Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T13:47:17.246Z"
             },
             {
               "$type": "Document",
@@ -193,10 +185,9 @@
               "RelativeDocumentMoniker": "GAM106_ASM\\Controllers\\GameDataController.cs",
               "ToolTip": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Controllers\\GameDataController.cs",
               "RelativeToolTip": "GAM106_ASM\\Controllers\\GameDataController.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAIBZwCoBAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAYAAAAAAAAAAABhwCoBAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T13:15:45.534Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T13:15:45.534Z"
             },
             {
               "$type": "Document",
@@ -208,8 +199,7 @@
               "RelativeToolTip": "GAM106_ASM\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-12-08T13:11:48.677Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T13:11:48.677Z"
             },
             {
               "$type": "Document",
@@ -221,8 +211,7 @@
               "RelativeToolTip": "GAM106_ASM\\Models\\AppDbContext.cs",
               "ViewState": "AgIAADwBAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T13:08:06.504Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T13:08:06.504Z"
             },
             {
               "$type": "Document",
@@ -234,21 +223,19 @@
               "RelativeToolTip": "GAM106_ASM\\appsettings.Development.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-12-08T12:55:21.689Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T12:55:21.689Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Program.cs",
               "RelativeDocumentMoniker": "GAM106_ASM\\Program.cs",
               "ToolTip": "D:\\FPTPolytechnic\\GAM106 - L\u1EADp tr\u00ECnh Game Back-End\\ASM\\GAM106_ASM\\GAM106_ASM\\Program.cs",
               "RelativeToolTip": "GAM106_ASM\\Program.cs",
-              "ViewState": "AgIAAIkAAAAAAAAAAAAAAJYAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAJcAAAAAAAAAAAAAAKYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-08T12:50:29.806Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-08T12:50:29.806Z"
             }
           ]
         }

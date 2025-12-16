@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using GAM106_ASM.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace GAM106_ASM.Controllers
 {
@@ -17,11 +19,46 @@ namespace GAM106_ASM.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IEmailSender _emailSender;
+        private readonly IOtpService _otpService;
 
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        public AuthController(AppDbContext context, IConfiguration configuration, IEmailSender emailSender, IOtpService otpService)
         {
             _context = context;
             _configuration = configuration;
+            _emailSender = emailSender;
+            _otpService = otpService;
+        }
+
+        // POST api/Auth/Register: Đăng ký tài khoản người chơi mới
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (request == null || !TryValidateModel(request))
+            {
+                return BadRequest(new { Message = "Dữ liệu đăng ký không hợp lệ." });
+            }
+
+            var exists = await _context.Players.AnyAsync(p => p.EmailAccount == request.Email);
+            if (exists)
+            {
+                return Conflict(new { Message = "Email đã tồn tại." });
+            }
+
+            var player = new Player
+            {
+                EmailAccount = request.Email,
+                LoginPassword = request.Password,
+                ExperiencePoints = 0,
+                HealthBar = 20,
+                FoodBar = 20,
+                Role = "Player"
+            };
+
+            _context.Players.Add(player);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Login), new { email = request.Email }, new { Message = "Đăng ký thành công." });
         }
 
         // POST api/Auth/Login: Điểm cuối để cấp Token
@@ -71,6 +108,64 @@ namespace GAM106_ASM.Controllers
                 PlayerId = player.PlayerId,
                 Role = player.Role
             });
+        }
+
+        // POST api/Auth/RequestPasswordReset: gửi OTP qua email
+        [HttpPost("RequestPasswordReset")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
+        {
+            if (request == null || !TryValidateModel(request))
+            {
+                return BadRequest(new { Message = "Email không hợp lệ." });
+            }
+
+            var player = await _context.Players.FirstOrDefaultAsync(p => p.EmailAccount == request.Email);
+            if (player == null)
+            {
+                // Để tránh lộ thông tin, vẫn trả về Ok
+                return Ok(new { Message = "Nếu email tồn tại, OTP đã được gửi." });
+            }
+
+            var otp = _otpService.GenerateOtp(player.EmailAccount, TimeSpan.FromMinutes(10));
+            var body = $"Mã OTP đặt lại mật khẩu của bạn là: {otp}. Mã có hiệu lực trong 10 phút.";
+            try
+            {
+                await _emailSender.SendEmailAsync(player.EmailAccount, "OTP đặt lại mật khẩu", body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Send email failed: {ex.Message}");
+                return StatusCode(500, new { Message = "Gửi email thất bại. Kiểm tra cấu hình SMTP." });
+            }
+
+            return Ok(new { Message = "OTP đã được gửi đến email." });
+        }
+
+        // POST api/Auth/ConfirmPasswordReset: xác nhận OTP và đổi mật khẩu
+        [HttpPost("ConfirmPasswordReset")]
+        public async Task<IActionResult> ConfirmPasswordReset([FromBody] PasswordResetConfirm request)
+        {
+            if (request == null || !TryValidateModel(request))
+            {
+                return BadRequest(new { Message = "Dữ liệu không hợp lệ." });
+            }
+
+            var player = await _context.Players.FirstOrDefaultAsync(p => p.EmailAccount == request.Email);
+            if (player == null)
+            {
+                return Unauthorized(new { Message = "Email không hợp lệ." });
+            }
+
+            var isValid = _otpService.ValidateOtp(player.EmailAccount, request.Otp);
+            if (!isValid)
+            {
+                return Unauthorized(new { Message = "OTP không đúng hoặc đã hết hạn." });
+            }
+
+            player.LoginPassword = request.NewPassword;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Đổi mật khẩu thành công." });
         }
 
         private string GenerateJwtToken(Player player)

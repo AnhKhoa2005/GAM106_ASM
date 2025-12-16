@@ -118,4 +118,5 @@ D:\FPTPolytechnic\GAM106 - Lập trình Game Back-End\ASM\GAM106_ASM\GAM106_ASM\
 D:\FPTPolytechnic\GAM106 - Lập trình Game Back-End\ASM\GAM106_ASM\GAM106_ASM\obj\Debug\net8.0\GAM106_ASM.pdb
 D:\FPTPolytechnic\GAM106 - Lập trình Game Back-End\ASM\GAM106_ASM\GAM106_ASM\obj\Debug\net8.0\GAM106_ASM.genruntimeconfig.cache
 D:\FPTPolytechnic\GAM106 - Lập trình Game Back-End\ASM\GAM106_ASM\GAM106_ASM\obj\Debug\net8.0\ref\GAM106_ASM.dll
+D:\FPTPolytechnic\GAM106 - Lập trình Game Back-End\ASM\GAM106_ASM\GAM106_ASM\obj\Debug\net8.0\GAM106_ASM.sourcelink.json
 D:\FPTPolytechnic\GAM106 - Lập trình Game Back-End\ASM\GAM106_ASM\GAM106_ASM\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

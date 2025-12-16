@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies; // Thêm Cookie Auth
 using Microsoft.AspNetCore.HttpOverrides;
+using GAM106_ASM.Services;
 
 namespace GAM106_ASM
 {
@@ -44,6 +45,13 @@ namespace GAM106_ASM
                         client.Timeout = TimeSpan.FromSeconds(30); // Default timeout 30 giây
                     });
                 });
+
+            // Bộ nhớ cache dùng cho OTP
+            builder.Services.AddMemoryCache();
+
+            // Đăng ký dịch vụ Email và OTP
+            builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+            builder.Services.AddSingleton<IOtpService, OtpService>();
 
             // --- CẤU HÌNH JWT AUTHENTICATION VÀ AUTHORIZATION ---
             var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -97,6 +105,11 @@ namespace GAM106_ASM
 
             builder.Services.AddRazorPages();
             builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Xử lý circular reference khi Include navigation properties
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                })
                 .ConfigureApiBehaviorOptions(options =>
                 {
                     // Tắt automatic model validation để tự xử lý validation
