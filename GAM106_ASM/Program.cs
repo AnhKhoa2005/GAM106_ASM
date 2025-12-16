@@ -195,7 +195,7 @@ namespace GAM106_ASM
             app.UseStaticFiles();
             app.UseRouting();
 
-            app.UseCors("AllowAll"); // SỬA: Thêm dòng này để sử dụng CORS policy
+            app.UseCors("AllowAll");// dòng này để sử dụng CORS policy
 
             app.UseAuthentication();
             app.UseAuthorization();

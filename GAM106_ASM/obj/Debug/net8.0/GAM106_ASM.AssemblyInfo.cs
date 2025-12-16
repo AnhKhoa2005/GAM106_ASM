@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GAM106_ASM")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57bc0d48da87db1388700f16cbdd84630495aec0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+334e03b080b6a460b70ea358e64837db31894873")]
 [assembly: System.Reflection.AssemblyProductAttribute("GAM106_ASM")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GAM106_ASM")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
